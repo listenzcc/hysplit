@@ -1,0 +1,6 @@
+PySPLIT
+cartopy
+datetime
+shapely
+botocore==1.32.3
+git+https://github.com/noaa-oar-arl/monetio.git
