@@ -1,15 +1,55 @@
 # %%
+import itertools
 import numpy as np
+import pandas as pd
 import imageio.v2 as imageio
+import matplotlib.pyplot as plt
 
 from PIL import Image
 from pathlib import Path
+from tqdm.auto import tqdm
 from scipy.interpolate import griddata
 
 # %%
 
 
-def collect_and_generate_images(folder: Path, lat_min, lat_max, lon_min, lon_max, grid_resolution=100):
+def collect_and_generate_images(folder: Path):
+    # Prepare folder
+    folder = Path(folder)
+    images_folder = folder / 'images'
+    images_folder.mkdir(parents=True, exist_ok=True)
+
+    # NW corner is (lat_min, lon_min)
+    # SE corner is (lat_max, lon_max)
+
+    # Find concentration.txt_xxx_yy files
+    txt_files = sorted(folder.glob('concentration.txt_*'))
+    dfs = []
+    for f in tqdm(txt_files):
+        csv = pd.read_csv(f, sep='\s+', skiprows=0)
+        dfs.append(csv)
+
+    table = pd.concat(dfs)
+    table['m'] = table[table.columns[4]]
+    table['m'] = table['m'] / table['m'].min()
+    table['m'] = np.log10(table['m'])
+    vmin,  vmax = table['m'].min(), table['m'].max()
+    print(table)
+
+    for day, hr in itertools.product(table['DAY'].unique(), table['HR'].unique()):
+        df = table[(table['DAY'] == day) & (table['HR'] == hr)]
+        if len(df) == 0:
+            continue
+        print(day, hr, len(df))
+        plt.scatter(df['LON'], df['LAT'], c=df['m'], vmin=vmin, vmax=vmax)
+        plt.xlim((table['LON'].min(), table['LON'].max()))
+        plt.ylim((table['LAT'].min(), table['LAT'].max()))
+        plt.savefig(folder / 'images' / f'{day}-{hr}.png')
+
+    return table
+
+
+def collect_and_generate_images_1(folder: Path, lat_min, lat_max, lon_min, lon_max, grid_resolution=100):
     # Prepare folder
     folder = Path(folder)
     images_folder = folder / 'images'
@@ -126,5 +166,8 @@ if __name__ == '__main__':
         lon_max=130
     )
 
+    # collect_and_generate_images(
+    #     './hysplit_simulation/1767078539.772455-bc5c1b4e-e770-45b5-945f-5a0f9fb46434', **kwargs)
+
     collect_and_generate_images(
-        './hysplit_simulation/1767078539.772455-bc5c1b4e-e770-45b5-945f-5a0f9fb46434', **kwargs)
+        './hysplit_simulation/1767078539.772455-bc5c1b4e-e770-45b5-945f-5a0f9fb46434')

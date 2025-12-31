@@ -107,15 +107,6 @@ prepare_files(dst, points, simulation_date)
 # subprocess.run(['./hycs_std'], stdin=open('CONTROL'))
 # 切换到目标目录执行命令
 
-# os.chdir(dst)
-
-result = subprocess.run(
-    ['ls'],        # 命令
-    cwd=dst,  # 切换到此目录
-    capture_output=True,
-    text=True
-)
-print(result)
 
 result = subprocess.run(
     ["c:\\hysplit\\exec\\hycs_std.exe"],        # 命令
