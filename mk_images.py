@@ -45,6 +45,7 @@ def collect_and_generate_images(folder: Path):
         plt.xlim((table['LON'].min(), table['LON'].max()))
         plt.ylim((table['LAT'].min(), table['LAT'].max()))
         plt.savefig(folder / 'images' / f'{day}-{hr}.png')
+        plt.close()
 
     return table
 
